@@ -19,7 +19,9 @@ public class Controller : MonoBehaviour
     [SerializeField] private Transform armTransform;
     [SerializeField] private Vector3 offset = new Vector3(84.34f, 21.6f, -2.38f);
     [SerializeField] private Transform headTransform;
-    [SerializeField] private Transform target;
+    [SerializeField] private Transform gunTransform;
+
+    [SerializeField] private BulletSpawner bulletSpawner;
 
     private void Awake()
     {
@@ -71,8 +73,14 @@ public class Controller : MonoBehaviour
                     headTransform.LookAt(hit.point);
                     armTransform.LookAt(hit.point);
                     armTransform.rotation = armTransform.rotation * Quaternion.Euler(offset);
+                    gunTransform.LookAt(hit.point);
                 }
-            }            
+            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                bulletSpawner.Shoot();
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Space))

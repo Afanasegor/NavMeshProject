@@ -18,10 +18,10 @@ public class EnemyController : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            MakePhysical();
-        }
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    MakePhysical();
+        //}
     }
 
     public void MakePhysical()
@@ -31,5 +31,12 @@ public class EnemyController : MonoBehaviour
         {
             allRigidbodies[i].isKinematic = false;
         }
+    }
+
+    public void OnHit()
+    {
+        MakePhysical();
+        GetComponent<Rigidbody>().AddForce(Vector3.up * 1000f);
+        GetComponent<Rigidbody>().AddTorque(800, 0, 0);
     }
 }
