@@ -11,6 +11,7 @@ public class Bullet : MonoBehaviour
     private void Start()
     {
         startPosition = transform.position;
+        Destroy(gameObject, 5f);
     }
 
     private void OnCollisionEnter(Collision collision)
