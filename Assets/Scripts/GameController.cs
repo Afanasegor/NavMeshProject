@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     public Toggle autoAim;
-    public Controller player;
+    [SerializeField] private Controller player;
 
     private void Update()
     {

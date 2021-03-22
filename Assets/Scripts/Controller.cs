@@ -5,13 +5,16 @@ using UnityEngine.AI;
 
 public class Controller : MonoBehaviour
 {
-    public bool isOnTower = false;
-    public bool autoAim;
+    [SerializeField] private Settings playerSettings; // create ScriptableObject in Assets, to set up player;
+
+    [HideInInspector] public bool isOnTower = false;
+    [HideInInspector] public bool autoAim;
 
     private Camera mainCamera;
     private NavMeshAgent agent;
     private Vector3 targetPosition;
 
+    // Arrays to switch off players phisics and colliders
     [SerializeField] private Rigidbody[] allRigidbodies;
     [SerializeField] private Collider[] allColliders;
 
@@ -19,16 +22,18 @@ public class Controller : MonoBehaviour
 
     private GameMode gameMode;
 
+    // Fields for aim enemy
     [SerializeField] private Transform enemyTarget;
     [SerializeField] private Transform armTransform;
-    [SerializeField] private Vector3 offset = new Vector3(84.34f, 21.6f, -2.38f);
+    [SerializeField] private Vector3 offset = new Vector3(84.34f, 21.6f, -2.38f); // need to normalize hand direction; default settings for this model: (84.34f, 21.6f, -2.38f)
     [SerializeField] private Transform headTransform;
     [SerializeField] private Transform gunTransform;
 
+    // Shootings settings
     [SerializeField] private BulletSpawner bulletSpawner;
-
-    [SerializeField] private float timeOut = 0.2f;
+    private float timeOut;
     private float curTimeout;
+    private int powerIndex = 1000;
 
     private RaycastHit hit; 
 
@@ -46,6 +51,11 @@ public class Controller : MonoBehaviour
         mainCamera = Camera.main;
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+
+        agent.speed = playerSettings.playerSpeed;
+        timeOut = playerSettings.shootingTimeout;
+        bulletSpawner.bulletPrefab.GetComponent<Bullet>().force = playerSettings.GetFireModeIndex(playerSettings.fireMode, powerIndex);
+
         gameMode = GameMode.walking;
     }
 
@@ -59,10 +69,6 @@ public class Controller : MonoBehaviour
                 {
                     agent.SetDestination(hit.point);
                 }
-                //if (hit.distance != 0)
-                //{
-                //    animator.SetBool("Walk", true);
-                //}
                 targetPosition = hit.point;
             }
 
@@ -87,7 +93,6 @@ public class Controller : MonoBehaviour
         {
             if (Input.GetMouseButton(0))
             {
-                RaycastHit hit;
                 if (Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), out hit))
                 {
                     headTransform.LookAt(hit.point);
@@ -105,42 +110,12 @@ public class Controller : MonoBehaviour
             }
             else
             {
-                curTimeout = timeOut + 1;
+                curTimeout += Time.deltaTime;
             }
-
-            //if (Input.GetMouseButtonDown(0))
-            //{
-            //    bulletSpawner.Shoot();
-            //}
         }
 
         // TODO: почистить
-        Debug.DrawRay(armTransform.position, FindDirectionRay(armTransform.position, enemyTarget.position), Color.red);
-        
-        // TODO: почистить
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-
-            if (CheckToSwitchGameMode())
-            {
-                gameMode = GameMode.shooting;
-                animator.enabled = false;
-                
-                headTransform.LookAt(enemyTarget.position);
-                armTransform.LookAt(enemyTarget.position);
-                armTransform.rotation = armTransform.rotation * Quaternion.Euler(offset);
-                gunTransform.LookAt(enemyTarget.position);
-            }
-        }
-    }    
-
-    private void MakePhysical()
-    {
-        animator.enabled = false;
-        for (int i = 0; i < allRigidbodies.Length; i++)
-        {
-            allRigidbodies[i].isKinematic = false;
-        }
+        Debug.DrawRay(armTransform.position, FindDirectionRay(armTransform.position, enemyTarget.position), Color.red);        
     }
 
     private Vector3 FindDirectionRay(Vector3 a, Vector3 b)
@@ -149,6 +124,10 @@ public class Controller : MonoBehaviour
         return direction;
     }
 
+    /// <summary>
+    /// Checking "can the player aim enemy or not"
+    /// </summary>
+    /// <returns></returns>
     private bool CheckToSwitchGameMode()
     {
         RaycastHit infoHit;
@@ -164,6 +143,11 @@ public class Controller : MonoBehaviour
             return false;
     }
 
+    /// <summary>
+    /// Switching gameMode
+    /// </summary>
+    /// <param name="mode"></param>
+    /// <returns></returns>
     IEnumerator SetGameMode(GameMode mode)
     {
         yield return new WaitForSeconds(0.5f);
@@ -171,7 +155,7 @@ public class Controller : MonoBehaviour
         animator.enabled = false;
         gameMode = mode;
 
-        if (autoAim)
+        if (autoAim && gameMode == GameMode.shooting)
         {
             headTransform.LookAt(enemyTarget.position);
             armTransform.LookAt(enemyTarget.position);
@@ -180,11 +164,10 @@ public class Controller : MonoBehaviour
         }
     }
     
-
     enum GameMode : byte
     {
         walking,
         shooting,
-        switchingMode
+        switchingMode // to select switching process
     }
 }

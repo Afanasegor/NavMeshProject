@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    [SerializeField] private float force = 5000f;
+    [SerializeField] public float force;
     private bool isActive = true;
     private Vector3 startPosition;
 

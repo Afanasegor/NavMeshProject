@@ -2880,6 +2880,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa92ac86c5b3fa247af7f39864ebc8bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerSettings: {fileID: 11400000, guid: 5e6e9876d73149747b9c93818057bb5a, type: 2}
   isOnTower: 0
   autoAim: 0
   allRigidbodies:
@@ -2912,7 +2913,6 @@ MonoBehaviour:
   headTransform: {fileID: 297870385}
   gunTransform: {fileID: 2112004821}
   bulletSpawner: {fileID: 1375010032}
-  timeOut: 0.2
 --- !u!195 &911423872
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -8721,6 +8721,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa92ac86c5b3fa247af7f39864ebc8bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerSettings: {fileID: 0}
   isOnTower: 0
   autoAim: 0
   allRigidbodies: []
@@ -8731,7 +8732,6 @@ MonoBehaviour:
   headTransform: {fileID: 0}
   gunTransform: {fileID: 0}
   bulletSpawner: {fileID: 0}
-  timeOut: 0.2
 --- !u!195 &1588895095
 NavMeshAgent:
   m_ObjectHideFlags: 0

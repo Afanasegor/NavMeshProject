@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BulletSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] public GameObject bulletPrefab;
     [SerializeField] private float bulletVelocity = 5f;
     [SerializeField] private ParticleSystem fire;
 
