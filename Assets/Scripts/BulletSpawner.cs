@@ -6,15 +6,7 @@ public class BulletSpawner : MonoBehaviour
 {
     [SerializeField] public GameObject bulletPrefab;
     [SerializeField] private float bulletVelocity = 5f;
-    [SerializeField] private ParticleSystem fire;
-
-    private void Update()
-    {
-        //if (Input.GetMouseButtonDown(0))
-        //{
-            
-        //}
-    }
+    [SerializeField] private ParticleSystem fire;    
 
     public void Shoot()
     {

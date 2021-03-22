@@ -3,26 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Controller : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     [SerializeField] private Settings playerSettings; // create ScriptableObject in Assets, to set up player;
 
     [HideInInspector] public bool isOnTower = false;
-    [HideInInspector] public bool autoAim;
 
     private Camera mainCamera;
     private NavMeshAgent agent;
     private Vector3 targetPosition;
 
+    [Space]
     // Arrays to switch off players phisics and colliders
     [SerializeField] private Rigidbody[] allRigidbodies;
     [SerializeField] private Collider[] allColliders;
+    [Space]
 
-    private Animator animator;
-
-    private GameMode gameMode;
-
-    // Fields for aim enemy
+    [Header("Fields for aim enemy")]
     [SerializeField] private Transform enemyTarget;
     [SerializeField] private Transform armTransform;
     [SerializeField] private Vector3 offset = new Vector3(84.34f, 21.6f, -2.38f); // need to normalize hand direction; default settings for this model: (84.34f, 21.6f, -2.38f)
@@ -35,10 +32,12 @@ public class Controller : MonoBehaviour
     private float curTimeout;
     private int powerIndex = 1000;
 
+    private Animator animator;
     private RaycastHit hit; 
 
     private void Awake()
     {
+        // switch off players phisics and colliders
         for (int i = 0; i < allRigidbodies.Length; i++)
         {
             allRigidbodies[i].isKinematic = true;
@@ -48,21 +47,23 @@ public class Controller : MonoBehaviour
 
     private void Start()
     {
+        // caching fields
         mainCamera = Camera.main;
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
 
+        // Initialize fields from ScriptableObject (playerSettings)
         agent.speed = playerSettings.playerSpeed;
         timeOut = playerSettings.shootingTimeout;
-        bulletSpawner.bulletPrefab.GetComponent<Bullet>().force = playerSettings.GetFireModeIndex(playerSettings.fireMode, powerIndex);
-
-        gameMode = GameMode.walking;
+        bulletSpawner.bulletPrefab.GetComponent<Bullet>().force = playerSettings.GetFireMode(playerSettings.fireMode, powerIndex);
     }
 
     private void Update()
     {
-        if (gameMode == GameMode.walking)
+        // Walking GameMode
+        if (GameController.singleton.GetGameMode() == GameController.GameMode.walking)
         {
+            // Find the point where to go
             if (Input.GetMouseButton(0))
             {                
                 if (Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), out hit))
@@ -72,6 +73,7 @@ public class Controller : MonoBehaviour
                 targetPosition = hit.point;
             }
 
+            // Animation controlling in Walking GameMode
             if (agent.velocity == Vector3.zero)
             {
                 animator.SetBool("Walk", false);
@@ -81,18 +83,18 @@ public class Controller : MonoBehaviour
                 animator.SetBool("Walk", true);
             }
 
+            // Switching GameMode if the player is on Tower and he can aim enemy
             if (isOnTower && !animator.GetBool("Walk") && CheckToSwitchGameMode())
             {
-                Debug.Log("Переключаю режим");
-                gameMode = GameMode.switchingMode;
-                StartCoroutine(SetGameMode(GameMode.shooting));
+                GameController.singleton.SetGameModeMethod(GameController.GameMode.shooting);
             }
         }
-
-        if (gameMode == GameMode.shooting)
+        // Shooting GameMode
+        else if (GameController.singleton.GetGameMode() == GameController.GameMode.shooting)
         {
             if (Input.GetMouseButton(0))
             {
+                // Find shoot point
                 if (Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), out hit))
                 {
                     headTransform.LookAt(hit.point);
@@ -101,6 +103,7 @@ public class Controller : MonoBehaviour
                     gunTransform.LookAt(hit.point);
                 }
 
+                // counting shooting Delay
                 curTimeout += Time.deltaTime;
                 if (curTimeout > timeOut)
                 {
@@ -110,12 +113,9 @@ public class Controller : MonoBehaviour
             }
             else
             {
-                curTimeout += Time.deltaTime;
+                curTimeout += Time.deltaTime; // counting shooting Delay
             }
-        }
-
-        // TODO: почистить
-        Debug.DrawRay(armTransform.position, FindDirectionRay(armTransform.position, enemyTarget.position), Color.red);        
+        }        
     }
 
     private Vector3 FindDirectionRay(Vector3 a, Vector3 b)
@@ -144,30 +144,19 @@ public class Controller : MonoBehaviour
     }
 
     /// <summary>
-    /// Switching gameMode
+    /// SetActive weapon, animator controller enable = false; If autoAim -> aim on enemy for the first shoot
     /// </summary>
-    /// <param name="mode"></param>
-    /// <returns></returns>
-    IEnumerator SetGameMode(GameMode mode)
+    public void ReadyForShoot()
     {
-        yield return new WaitForSeconds(0.5f);
         gunTransform.gameObject.SetActive(true);
         animator.enabled = false;
-        gameMode = mode;
-
-        if (autoAim && gameMode == GameMode.shooting)
+        
+        if (GameController.singleton.GetAutoAim())
         {
             headTransform.LookAt(enemyTarget.position);
             armTransform.LookAt(enemyTarget.position);
             armTransform.rotation = armTransform.rotation * Quaternion.Euler(offset);
             gunTransform.LookAt(enemyTarget.position);
         }
-    }
-    
-    enum GameMode : byte
-    {
-        walking,
-        shooting,
-        switchingMode // to select switching process
     }
 }

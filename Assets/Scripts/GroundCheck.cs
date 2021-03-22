@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class GroundCheck : MonoBehaviour
 {
-    [SerializeField] private Controller player;
+    private PlayerController player;
+
+    private void Start()
+    {
+        player = GetComponentInParent<PlayerController>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
